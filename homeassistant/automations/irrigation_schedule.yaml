@@ -1,0 +1,38 @@
+alias: "Irrigation - Morning Schedule"
+description: "Run irrigation zones sequentially every morning"
+trigger:
+  - platform: time
+    at: "06:00:00"
+condition:
+  - condition: state
+    entity_id: binary_sensor.garden_irrigation_rain_sensor
+    state: "off"
+action:
+  # Zone 1 - 15 min
+  - service: switch.turn_on
+    entity_id: switch.garden_irrigation_zone_1
+  - delay: "00:15:00"
+  - service: switch.turn_off
+    entity_id: switch.garden_irrigation_zone_1
+
+  # Zone 2 - 15 min
+  - service: switch.turn_on
+    entity_id: switch.garden_irrigation_zone_2
+  - delay: "00:15:00"
+  - service: switch.turn_off
+    entity_id: switch.garden_irrigation_zone_2
+
+  # Zone 3 - 15 min
+  - service: switch.turn_on
+    entity_id: switch.garden_irrigation_zone_3
+  - delay: "00:15:00"
+  - service: switch.turn_off
+    entity_id: switch.garden_irrigation_zone_3
+
+  # Zone 4 - 15 min
+  - service: switch.turn_on
+    entity_id: switch.garden_irrigation_zone_4
+  - delay: "00:15:00"
+  - service: switch.turn_off
+    entity_id: switch.garden_irrigation_zone_4
+mode: single

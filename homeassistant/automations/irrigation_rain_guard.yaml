@@ -1,0 +1,20 @@
+alias: "Irrigation - Rain Guard"
+description: "Turn off all irrigation zones when rain is detected"
+trigger:
+  - platform: state
+    entity_id: binary_sensor.garden_irrigation_rain_sensor
+    to: "on"
+condition: []
+action:
+  - service: switch.turn_off
+    target:
+      entity_id:
+        - switch.garden_irrigation_zone_1
+        - switch.garden_irrigation_zone_2
+        - switch.garden_irrigation_zone_3
+        - switch.garden_irrigation_zone_4
+  - service: notify.notify
+    data:
+      title: "Irrigation"
+      message: "Rain detected - all zones turned off"
+mode: single
