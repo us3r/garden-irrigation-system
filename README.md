@@ -12,38 +12,48 @@ System nawadniania ogrodu oparty na ESP32 i Home Assistant, zastepujacy sterowni
 
 Projekt zamiany tradycyjnego sterownika nawadniania Toro Temp-4 na rozwiazanie smart home z pelna kontrola przez Home Assistant. Wykorzystuje plytke Waveshare ESP32-S3-Relay-6CH z firmware ESPHome.
 
+Cala logika bezpieczenstwa dziala na poziomie firmware — interlock stref, auto-off, reakcja na czujnik deszczu, restore mode — niezaleznie od Home Assistant i WiFi.
+
 ## Funkcje
 
-- 4 strefy nawadniania sterowane niezaleznie
-- Czujnik deszczu - automatyczne wstrzymanie nawadniania
+- 4 strefy nawadniania sterowane niezaleznie (interlock — max 1 aktywna)
+- Czujnik deszczu — natychmiastowe wylaczenie stref na poziomie firmware
+- Konfigurowalne max runtime per strefa (slider 5-60 min w HA, domyslnie 30 min)
+- Liczniki czasu pracy per strefa (diagnostyka zuzycia wody / wykrywanie usterek)
 - Harmonogram nawadniania w Home Assistant
-- Reczne sterowanie z poziomu dashboardu HA
-- Dioda LED RGB jako wskaznik stanu pracy
-- Buzzer do sygnalizacji (start/stop strefy, ostrzezenie przed auto-off, alarm deszczowy)
+- Reczne sterowanie z dashboardu HA lub lokalnego web UI
+- Dioda LED RGB jako wskaznik stanu (zielony = aktywna strefa, niebieski = deszcz)
+- Buzzer — sygnal startu strefy, ostrzezenie przed auto-off, alarm deszczowy
 - Monitoring WiFi i uptime
-- Fallback AP w razie utraty polaczenia z WiFi
+- Fallback AP z captive portal w razie utraty WiFi
 - Lokalny web UI (`http://<ip>`) jako fallback gdy HA niedostepny
+- Improv Serial — rekonfiguracja WiFi przez USB bez reflashowania
 
 ### Zabezpieczenia na poziomie firmware
 
-Cala logika bezpieczenstwa dziala bezposrednio na ESP32 — niezaleznie od Home Assistant:
+> Szczegolowy opis: [docs/safety.md](docs/safety.md)
 
-- **Interlock** — tylko jedna strefa aktywna w danym momencie, 2s przerwa miedzy przelaczeniami (ochrona transformatora)
-- **Auto-off** — konfigurowalne max runtime (domyslnie 30 min), z poprawnym restartem timera przy ponownym wlaczeniu (`script: mode: restart`)
-- **Rain sensor** — natychmiastowe wylaczenie wszystkich stref przy wykryciu deszczu
-- **Restore mode** — po reboocie/utracie zasilania wszystkie strefy i LED startuja jako OFF
-- **WiFi independence** — `reboot_timeout: 0s` oznacza ze urzadzenie nie restartuje sie przy utracie WiFi, dziala dalej autonomicznie
-- **Runtime counters** — calkowity czas pracy kazdej strefy (diagnostyka: "strefa 3 chodzi 2x dluzej niz reszta — zatkana dysza?")
+| Zabezpieczenie | Wymaga HA? | Wymaga WiFi? |
+|----------------|------------|--------------|
+| Interlock stref (max 1 aktywna, 2s przerwa) | Nie | Nie |
+| Auto-off timer (konfigurowalne max runtime) | Nie | Nie |
+| Czujnik deszczu (natychmiastowe wylaczenie) | Nie | Nie |
+| Restore mode (ALWAYS_OFF po reboocie) | Nie | Nie |
+| Niezaleznosc od WiFi (reboot_timeout: 0s) | Nie | Nie |
+| Fallback AP + captive portal | Nie | Nie |
+| Web server (panel sterowania na porcie 80) | Nie | Tak (LAN) |
+| Improv Serial (rekonfiguracja WiFi po USB) | Nie | Nie |
 
 ## Hardware
 
 | Element | Model |
 |---------|-------|
 | Kontroler | [Waveshare ESP32-S3-Relay-6CH](https://www.waveshare.com/wiki/ESP32-S3-Relay-6CH) |
-| Firmware | [ESPHome](https://esphome.io/) |
+| Firmware | [ESPHome](https://esphome.io/) 2026.3+ |
 | Platforma | [Home Assistant](https://www.home-assistant.io/) |
 | Zawory | Istniejace zawory 24V AC z systemu Toro |
-| Zasilanie zaworow | Istniejacy transformator 24V AC (Toro) |
+| Transformator | Toro 24V AC, 625mA (istniejacy) |
+| Zasilanie ESP32 | Ladowarka USB-C 5V lub zasilacz DC 7-36V |
 | Czujnik deszczu | Styk NO (normally open) |
 
 ## Mapowanie kanalow
@@ -54,56 +64,75 @@ Cala logika bezpieczenstwa dziala bezposrednio na ESP32 — niezaleznie od Home 
 | CH2   | GPIO2  | Strefa 2 |
 | CH3   | GPIO41 | Strefa 3 |
 | CH4   | GPIO42 | Strefa 4 |
-| -     | GPIO4  | Czujnik deszczu |
+| CH5   | GPIO45 | Rezerwa  |
+| CH6   | GPIO46 | Rezerwa  |
+| -     | GPIO4  | Czujnik deszczu (Pico header) |
+| -     | GPIO38 | LED RGB (WS2812, onboard) |
+| -     | GPIO21 | Buzzer (pasywny, onboard) |
 
 ## Struktura projektu
 
 ```
 .
 ├── esphome/
-│   ├── irrigation.yaml          # Konfiguracja ESPHome
-│   └── secrets.yaml.example     # Szablon plikow secrets
+│   ├── irrigation.yaml              # Konfiguracja ESPHome
+│   └── secrets.yaml.example         # Szablon secrets
 ├── homeassistant/
 │   └── automations/
 │       ├── irrigation_rain_guard.yaml   # Automatyka - ochrona przed deszczem
 │       └── irrigation_schedule.yaml     # Automatyka - harmonogram nawadniania
 ├── docs/
-│   ├── hardware.md              # Specyfikacja techniczna
-│   ├── wiring.md                # Schemat podlaczenia
-│   └── schemat.html             # Interaktywny schemat (otworz w przegladarce)
-└── images/
-    └── ...                      # Zdjecia sprzetu
+│   ├── hardware.md                  # Specyfikacja techniczna
+│   ├── safety.md                    # Opis wszystkich zabezpieczen
+│   ├── wiring.md                    # Schemat podlaczenia (tekst)
+│   └── schemat.html                 # Interaktywny schemat (otworz w przegladarce)
+├── images/                          # Zdjecia sprzetu
+├── CHANGELOG.md                     # Historia zmian
+└── pyproject.toml                   # Srodowisko Python (uv)
 ```
 
 ## Instalacja
 
-### 1. ESPHome
+### 1. Srodowisko
 
 ```bash
-# Skopiuj secrets
-cp esphome/secrets.yaml.example esphome/secrets.yaml
-
-# Uzupelnij dane WiFi i klucze w secrets.yaml
-
-# Flash firmware
-esphome run esphome/irrigation.yaml
+# Wymagany uv (https://docs.astral.sh/uv/)
+uv sync
 ```
 
-### 2. Home Assistant
+### 2. ESPHome
 
-1. ESPHome automatycznie wykryje urzadzenie w HA (ESPHome integration)
-2. Skopiuj automatyzacje z `homeassistant/automations/` do swojej konfiguracji HA
-3. Dostosuj harmonogram nawadniania w `irrigation_schedule.yaml`
+```bash
+# Skopiuj i uzupelnij secrets
+cp esphome/secrets.yaml.example esphome/secrets.yaml
+# Edytuj secrets.yaml: wifi_ssid, wifi_password, api_key (base64), ota_password, fallback_password
 
-### 3. Podlaczenie fizyczne
+# Pierwszy flash (USB-C)
+uv run esphome run esphome/irrigation.yaml
 
-Szczegolowy schemat: [docs/wiring.md](docs/wiring.md)
+# Kolejne aktualizacje (OTA, po WiFi)
+uv run esphome run esphome/irrigation.yaml --device <IP>
+```
+
+### 3. Home Assistant
+
+1. **Settings** -> **Devices & Services** -> **Add Integration** -> **ESPHome**
+2. Podaj adres IP urzadzenia i klucz API z `secrets.yaml`
+3. Skopiuj automatyzacje z `homeassistant/automations/` do konfiguracji HA
+4. Dostosuj harmonogram w `irrigation_schedule.yaml`
+
+### 4. Podlaczenie fizyczne
+
+> Szczegolowy schemat krok po kroku: [docs/wiring.md](docs/wiring.md)
+>
+> Interaktywny schemat z kolorami: [docs/schemat.html](docs/schemat.html)
 
 Skrotowo:
-- Zawory 24V AC podlacz do przekaznikow CH1-CH4 (COM + NO)
-- Przewod wspolny zaworow do jednej fazy transformatora 24V AC
-- Czujnik deszczu do GPIO4 + GND
-- Zasilanie ESP32: USB-C 5V (ladowarka) lub 7-36V DC do zlacza srubowego
+1. **USB-C** (ladowarka 5V) → zasilanie ESP32
+2. **Mostek** COM na CH1-CH4 (skretka ethernetowa)
+3. **Transformator Toro 24V AC**: przewod 1 → dowolny COM, przewod 2 → zlaczka z przewodem COM zaworow
+4. **Przewody stref** → NO na CH1-CH4 (lewa srubka kazdego kanalu)
+5. **Czujnik deszczu** → GPIO4 + GND na Pico headerze (konektory dupont)
 
 ## Konfiguracja harmonogramu
 
@@ -112,7 +141,14 @@ Domyslny harmonogram (`irrigation_schedule.yaml`):
 - Kazda strefa po 15 minut, sekwencyjnie
 - Automatyczne pominiecie gdy pada deszcz
 
-Mozesz dostosowac czasy i kolejnosc stref wedlug potrzeb.
+Czasy i kolejnosc stref mozna dostosowac. Interlock gwarantuje ze nawet przy blednej konfiguracji nigdy nie dziala wiecej niz jedna strefa.
+
+## Diagnostyka
+
+- **Web UI**: `http://<ip>` — pelny panel sterowania, podglad sensorow
+- **Runtime counters**: calkowity czas pracy kazdej strefy widoczny w HA — jesli jedna strefa ma znaczaco wiecej godzin, moze miec zatkana dysze lub uszkodzony zawor
+- **WiFi Signal**: sila sygnalu w dBm — jesli ponizej -75 dBm, rozważ antene zewnetrzna lub zmiane lokalizacji
+- **Logi ESPHome**: `uv run esphome logs esphome/irrigation.yaml --device <IP>`
 
 ## Licencja
 

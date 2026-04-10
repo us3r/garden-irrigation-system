@@ -34,5 +34,17 @@ Wykorzystujemy istniejace zawory z systemu Toro Temp-4:
 
 ## Transformator
 
-Wykorzystujemy istniejacy transformator 24V AC z systemu Toro.
-Sluzy do zasilania zaworow elektromagnetycznych (nie do zasilania ESP32).
+Wykorzystujemy istniejacy transformator 24V AC z systemu Toro:
+- Model: XY-2400625AG (Xing Yuan Electronics)
+- Input: 230-240V ~50Hz
+- Output: 24V AC, 625mA, 15VA
+- Sluzy wylacznie do zasilania zaworow elektromagnetycznych (nie do zasilania ESP32)
+- AC nie ma biegunowosci — nie ma znaczenia ktory przewod gdzie
+
+## Zasilanie ESP32
+
+ESP32 wymaga osobnego zasilania DC:
+- **Opcja 1 (zalecana):** Ladowarka USB-C 5V (np. od telefonu)
+- **Opcja 2:** Zasilacz DC 7-36V do zlacza srubowego na plytce
+
+Nie mozna zasilac ESP32 z transformatora Toro (24V AC) bez prostownika.
