@@ -1,0 +1,460 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Schemat Podłączenia — System Nawadniania</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,500;0,9..40,700;1,9..40,300&family=JetBrains+Mono:wght@400;600&display=swap');
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: #FAFAF8;
+    color: #1a1a1a;
+    min-height: 100vh;
+    padding: 40px 20px;
+  }
+
+  .page-header {
+    text-align: center;
+    margin-bottom: 48px;
+  }
+
+  .page-header h1 {
+    font-size: 28px;
+    font-weight: 700;
+    letter-spacing: -0.5px;
+    color: #111;
+    margin-bottom: 8px;
+  }
+
+  .page-header p {
+    font-size: 15px;
+    color: #666;
+    font-weight: 300;
+  }
+
+  .diagram-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    background: #fff;
+    border-radius: 16px;
+    border: 1px solid #e0e0dd;
+    box-shadow: 0 4px 24px rgba(0,0,0,0.04);
+    padding: 32px;
+    overflow-x: auto;
+  }
+
+  svg {
+    display: block;
+    margin: 0 auto;
+  }
+
+  /* Legend */
+  .legend {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    display: flex;
+    gap: 32px;
+    justify-content: center;
+    flex-wrap: wrap;
+    padding: 20px;
+    background: #fff;
+    border-radius: 12px;
+    border: 1px solid #e0e0dd;
+  }
+
+  .legend-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    font-size: 14px;
+    font-weight: 500;
+  }
+
+  .legend-line {
+    width: 36px;
+    height: 4px;
+    border-radius: 2px;
+  }
+
+  .legend-line.ac { background: #C0392B; }
+  .legend-line.dc { background: #2471A3; }
+  .legend-line.signal { background: #27AE60; }
+  .legend-line.common { background: #8E44AD; }
+
+  .note-box {
+    max-width: 1100px;
+    margin: 24px auto 0;
+    padding: 20px 24px;
+    background: #FFFBF0;
+    border: 1px solid #F0DCA0;
+    border-radius: 12px;
+    font-size: 14px;
+    line-height: 1.7;
+    color: #5A4E2F;
+  }
+
+  .note-box strong { color: #3A3219; }
+
+  /* Tooltip */
+  .hover-label { cursor: default; }
+  .hover-label:hover .tooltip-bg { opacity: 1; }
+  .hover-label:hover .tooltip-text { opacity: 1; }
+
+  @media (max-width: 768px) {
+    .diagram-container { padding: 16px; }
+    .legend { gap: 16px; }
+    body { padding: 20px 10px; }
+    .page-header h1 { font-size: 22px; }
+  }
+</style>
+</head>
+<body>
+
+<div class="page-header">
+  <h1>Schemat Podłączenia</h1>
+  <p>ESP32-S3-Relay-6CH + Zawory 24V AC + Czujnik deszczu</p>
+</div>
+
+<div class="diagram-container">
+<svg viewBox="0 0 1040 720" xmlns="http://www.w3.org/2000/svg" font-family="'DM Sans', sans-serif">
+  <defs>
+    <marker id="arrow-red" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#C0392B"/>
+    </marker>
+    <marker id="arrow-blue" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#2471A3"/>
+    </marker>
+    <marker id="arrow-green" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#27AE60"/>
+    </marker>
+    <marker id="arrow-purple" markerWidth="8" markerHeight="6" refX="8" refY="3" orient="auto">
+      <path d="M0,0 L8,3 L0,6" fill="#8E44AD"/>
+    </marker>
+
+    <filter id="shadow" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-opacity="0.08"/>
+    </filter>
+    <filter id="shadow-sm" x="-4%" y="-4%" width="108%" height="108%">
+      <feDropShadow dx="0" dy="1" stdDeviation="2" flood-opacity="0.06"/>
+    </filter>
+  </defs>
+
+  <!-- ==================== -->
+  <!-- GNIAZDKO 230V        -->
+  <!-- ==================== -->
+  <g transform="translate(40, 280)">
+    <rect width="100" height="100" rx="14" fill="#F5F5F2" stroke="#ccc" stroke-width="1.5" filter="url(#shadow-sm)"/>
+    <!-- Socket icon -->
+    <circle cx="38" cy="45" r="6" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="62" cy="45" r="6" fill="none" stroke="#555" stroke-width="2"/>
+    <circle cx="50" cy="30" r="4" fill="none" stroke="#555" stroke-width="1.5"/>
+    <rect x="30" y="60" width="40" height="3" rx="1.5" fill="#999"/>
+    <text x="50" y="84" text-anchor="middle" font-size="12" font-weight="700" fill="#333">230V AC</text>
+    <text x="50" y="96" text-anchor="middle" font-size="9" fill="#888">Gniazdko</text>
+  </g>
+
+  <!-- ==================== -->
+  <!-- ŁADOWARKA USB        -->
+  <!-- ==================== -->
+  <g transform="translate(40, 100)">
+    <rect width="100" height="72" rx="12" fill="#EBF5FB" stroke="#2471A3" stroke-width="1.5" filter="url(#shadow-sm)"/>
+    <text x="50" y="28" text-anchor="middle" font-size="11" font-weight="700" fill="#2471A3">Ładowarka</text>
+    <text x="50" y="44" text-anchor="middle" font-size="11" font-weight="700" fill="#2471A3">USB 5V</text>
+    <text x="50" y="62" text-anchor="middle" font-size="9" fill="#5B9BD5">np. od telefonu</text>
+  </g>
+
+  <!-- Wire: Gniazdko → Ładowarka (blue) -->
+  <path d="M 90,280 L 90,172" stroke="#2471A3" stroke-width="2.5" fill="none" marker-end="url(#arrow-blue)" stroke-dasharray="6,3"/>
+
+  <!-- Wire: Ładowarka → ESP32 USB-C (blue) -->
+  <path d="M 140,136 L 310,136" stroke="#2471A3" stroke-width="2.5" fill="none" marker-end="url(#arrow-blue)"/>
+  <text x="225" y="128" text-anchor="middle" font-size="10" fill="#2471A3" font-weight="500">kabel USB-C</text>
+
+  <!-- ==================== -->
+  <!-- TRANSFORMATOR TORO   -->
+  <!-- ==================== -->
+  <g transform="translate(40, 460)">
+    <rect width="100" height="80" rx="12" fill="#FDEDEC" stroke="#C0392B" stroke-width="1.5" filter="url(#shadow-sm)"/>
+    <text x="50" y="24" text-anchor="middle" font-size="10" font-weight="700" fill="#C0392B">Transformator</text>
+    <text x="50" y="40" text-anchor="middle" font-size="11" font-weight="700" fill="#C0392B">TORO</text>
+    <text x="50" y="56" text-anchor="middle" font-size="13" font-weight="700" fill="#922B21">24V AC</text>
+    <text x="50" y="72" text-anchor="middle" font-size="9" fill="#C0392B">istniejący zasilacz</text>
+  </g>
+
+  <!-- Wire: Gniazdko → Transformator (red) -->
+  <path d="M 90,380 L 90,460" stroke="#C0392B" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)" stroke-dasharray="6,3"/>
+
+  <!-- ==================== -->
+  <!-- ESP32 BOARD          -->
+  <!-- ==================== -->
+  <g transform="translate(300, 80)">
+    <rect width="440" height="520" rx="16" fill="#1B2631" stroke="#2C3E50" stroke-width="2" filter="url(#shadow)"/>
+    <!-- Board header -->
+    <rect width="440" height="48" rx="16" fill="#2C3E50"/>
+    <rect y="32" width="440" height="16" fill="#2C3E50"/>
+    <text x="220" y="30" text-anchor="middle" font-size="15" font-weight="700" fill="#ECF0F1" letter-spacing="1">WAVESHARE ESP32-S3-Relay-6CH</text>
+
+    <!-- USB-C port -->
+    <rect x="-12" y="46" width="24" height="16" rx="4" fill="#34495E" stroke="#5D6D7E" stroke-width="1"/>
+    <text x="0" y="58" text-anchor="middle" font-size="7" fill="#AEB6BF" font-weight="600">USB</text>
+
+    <!-- GPIO Header area (top-right) -->
+    <g transform="translate(320, 58)">
+      <rect width="100" height="60" rx="6" fill="#1A2530" stroke="#34495E" stroke-width="1"/>
+      <text x="50" y="16" text-anchor="middle" font-size="9" fill="#7FB3D8" font-weight="600">PICO HEADER</text>
+      <text x="50" y="32" text-anchor="middle" font-size="8" fill="#5D6D7E">Pin 6: GPIO4</text>
+      <text x="50" y="44" text-anchor="middle" font-size="8" fill="#5D6D7E">Pin 8: GND</text>
+      <!-- Pin indicators -->
+      <circle cx="72" cy="31" r="3" fill="#27AE60"/>
+      <circle cx="72" cy="43" r="3" fill="#566573"/>
+    </g>
+
+    <!-- Status LED -->
+    <circle cx="40" cy="78" r="6" fill="#2ECC71" opacity="0.7"/>
+    <text x="56" y="82" font-size="8" fill="#7FB3D8">LED</text>
+
+    <!-- ==================== -->
+    <!-- RELAY CHANNELS       -->
+    <!-- ==================== -->
+    <!-- CH1 -->
+    <g transform="translate(20, 160)">
+      <rect width="92" height="100" rx="8" fill="#263747" stroke="#34495E" stroke-width="1"/>
+      <text x="46" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#F39C12">CH1</text>
+      <text x="46" y="32" text-anchor="middle" font-size="8" fill="#7FB3D8">GPIO1</text>
+      <!-- Terminals -->
+      <g transform="translate(10, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">NO</text>
+      </g>
+      <g transform="translate(36, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">COM</text>
+      </g>
+      <g transform="translate(62, 42)">
+        <rect width="20" height="18" rx="3" fill="#566573" opacity="0.5"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="600" fill="#8395A7">NC</text>
+      </g>
+      <text x="46" y="80" text-anchor="middle" font-size="7" fill="#566573">Strefa 1</text>
+      <!-- Relay icon -->
+      <rect x="30" y="86" width="32" height="4" rx="2" fill="#F39C12" opacity="0.4"/>
+    </g>
+
+    <!-- CH2 -->
+    <g transform="translate(122, 160)">
+      <rect width="92" height="100" rx="8" fill="#263747" stroke="#34495E" stroke-width="1"/>
+      <text x="46" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#F39C12">CH2</text>
+      <text x="46" y="32" text-anchor="middle" font-size="8" fill="#7FB3D8">GPIO2</text>
+      <g transform="translate(10, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">NO</text>
+      </g>
+      <g transform="translate(36, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">COM</text>
+      </g>
+      <g transform="translate(62, 42)">
+        <rect width="20" height="18" rx="3" fill="#566573" opacity="0.5"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="600" fill="#8395A7">NC</text>
+      </g>
+      <text x="46" y="80" text-anchor="middle" font-size="7" fill="#566573">Strefa 2</text>
+      <rect x="30" y="86" width="32" height="4" rx="2" fill="#F39C12" opacity="0.4"/>
+    </g>
+
+    <!-- CH3 -->
+    <g transform="translate(224, 160)">
+      <rect width="92" height="100" rx="8" fill="#263747" stroke="#34495E" stroke-width="1"/>
+      <text x="46" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#F39C12">CH3</text>
+      <text x="46" y="32" text-anchor="middle" font-size="8" fill="#7FB3D8">GPIO41</text>
+      <g transform="translate(10, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">NO</text>
+      </g>
+      <g transform="translate(36, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">COM</text>
+      </g>
+      <g transform="translate(62, 42)">
+        <rect width="20" height="18" rx="3" fill="#566573" opacity="0.5"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="600" fill="#8395A7">NC</text>
+      </g>
+      <text x="46" y="80" text-anchor="middle" font-size="7" fill="#566573">Strefa 3</text>
+      <rect x="30" y="86" width="32" height="4" rx="2" fill="#F39C12" opacity="0.4"/>
+    </g>
+
+    <!-- CH4 -->
+    <g transform="translate(326, 160)">
+      <rect width="92" height="100" rx="8" fill="#263747" stroke="#34495E" stroke-width="1"/>
+      <text x="46" y="18" text-anchor="middle" font-size="11" font-weight="700" fill="#F39C12">CH4</text>
+      <text x="46" y="32" text-anchor="middle" font-size="8" fill="#7FB3D8">GPIO42</text>
+      <g transform="translate(10, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="700" fill="#fff">NO</text>
+      </g>
+      <g transform="translate(36, 42)">
+        <rect width="20" height="18" rx="3" fill="#C0392B" opacity="0.9"/>
+        <text x="10" y="13" text-anchor="middle" font-size="7" font-weight="700" fill="#fff">COM</text>
+      </g>
+      <g transform="translate(62, 42)">
+        <rect width="20" height="18" rx="3" fill="#566573" opacity="0.5"/>
+        <text x="10" y="13" text-anchor="middle" font-size="8" font-weight="600" fill="#8395A7">NC</text>
+      </g>
+      <text x="46" y="80" text-anchor="middle" font-size="7" fill="#566573">Strefa 4</text>
+      <rect x="30" y="86" width="32" height="4" rx="2" fill="#F39C12" opacity="0.4"/>
+    </g>
+
+    <!-- Bridge label for COMs -->
+    <g transform="translate(20, 275)">
+      <line x1="46" y1="0" x2="372" y2="0" stroke="#C0392B" stroke-width="3" stroke-dasharray="4,2"/>
+      <text x="209" y="18" text-anchor="middle" font-size="9" font-weight="700" fill="#C0392B">← MOSTEK: połącz wszystkie COM razem →</text>
+    </g>
+
+    <!-- ==================== -->
+    <!-- STEP-BY-STEP LABELS  -->
+    <!-- ==================== -->
+
+    <!-- Step numbers inside board -->
+    <g transform="translate(20, 320)">
+      <rect width="400" height="180" rx="10" fill="#1A2530" stroke="#2C3E50" stroke-width="1"/>
+      <text x="200" y="24" text-anchor="middle" font-size="12" font-weight="700" fill="#ECF0F1">Jak podłączyć — krok po kroku</text>
+
+      <circle cx="24" cy="52" r="10" fill="#2471A3"/>
+      <text x="24" y="56" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">1</text>
+      <text x="42" y="56" font-size="10" fill="#AEB6BF">Podłącz ładowarkę USB-C → zasilanie płytki</text>
+
+      <circle cx="24" cy="82" r="10" fill="#C0392B"/>
+      <text x="24" y="86" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">2</text>
+      <text x="42" y="86" font-size="10" fill="#AEB6BF">Zmostkuj COM na CH1–CH4 (kawałkiem drutu)</text>
+
+      <circle cx="24" cy="112" r="10" fill="#C0392B"/>
+      <text x="24" y="116" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">3</text>
+      <text x="42" y="116" font-size="10" fill="#AEB6BF">Transformator: 1 przewód → dowolny COM</text>
+
+      <circle cx="24" cy="142" r="10" fill="#8E44AD"/>
+      <text x="24" y="146" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">4</text>
+      <text x="42" y="146" font-size="10" fill="#AEB6BF">Transformator: 2 przewód → wspólny zaworów</text>
+
+      <circle cx="24" cy="172" r="10" fill="#27AE60"/>
+      <text x="24" y="176" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">5</text>
+      <text x="42" y="176" font-size="10" fill="#AEB6BF">Czujnik deszczu → GPIO4 (pin 6) + GND (pin 8)</text>
+    </g>
+  </g>
+
+  <!-- ==================== -->
+  <!-- WIRES FROM TRAFO     -->
+  <!-- ==================== -->
+
+  <!-- Transformer wire 1 → COM bridge (red) -->
+  <path d="M 140,490 L 230,490 L 230,355 L 300,355" stroke="#C0392B" stroke-width="3" fill="none" marker-end="url(#arrow-red)"/>
+  <text x="190" y="482" font-size="9" fill="#C0392B" font-weight="600" transform="rotate(-90, 190, 482)">przewód 1</text>
+
+  <!-- Transformer wire 2 → Common going down to valves (purple) -->
+  <path d="M 140,510 L 260,510 L 260,660 L 520,660" stroke="#8E44AD" stroke-width="3" fill="none" marker-end="url(#arrow-purple)"/>
+  <text x="400" y="652" text-anchor="middle" font-size="10" fill="#8E44AD" font-weight="600">przewód 2 → wspólny COM zaworów</text>
+
+  <!-- ==================== -->
+  <!-- VALVES (right side)  -->
+  <!-- ==================== -->
+  <g transform="translate(800, 200)">
+    <!-- Valve 1 -->
+    <g transform="translate(0, 0)">
+      <rect width="140" height="44" rx="8" fill="#EAFAF1" stroke="#27AE60" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <circle cx="22" cy="22" r="12" fill="#27AE60" opacity="0.15"/>
+      <text x="22" y="27" text-anchor="middle" font-size="14">🌱</text>
+      <text x="82" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1E8449">Zawór</text>
+      <text x="82" y="36" text-anchor="middle" font-size="10" fill="#27AE60">Strefa 1</text>
+    </g>
+    <!-- Valve 2 -->
+    <g transform="translate(0, 60)">
+      <rect width="140" height="44" rx="8" fill="#EAFAF1" stroke="#27AE60" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <circle cx="22" cy="22" r="12" fill="#27AE60" opacity="0.15"/>
+      <text x="22" y="27" text-anchor="middle" font-size="14">🌿</text>
+      <text x="82" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1E8449">Zawór</text>
+      <text x="82" y="36" text-anchor="middle" font-size="10" fill="#27AE60">Strefa 2</text>
+    </g>
+    <!-- Valve 3 -->
+    <g transform="translate(0, 120)">
+      <rect width="140" height="44" rx="8" fill="#EAFAF1" stroke="#27AE60" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <circle cx="22" cy="22" r="12" fill="#27AE60" opacity="0.15"/>
+      <text x="22" y="27" text-anchor="middle" font-size="14">🌳</text>
+      <text x="82" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1E8449">Zawór</text>
+      <text x="82" y="36" text-anchor="middle" font-size="10" fill="#27AE60">Strefa 3</text>
+    </g>
+    <!-- Valve 4 -->
+    <g transform="translate(0, 180)">
+      <rect width="140" height="44" rx="8" fill="#EAFAF1" stroke="#27AE60" stroke-width="1.5" filter="url(#shadow-sm)"/>
+      <circle cx="22" cy="22" r="12" fill="#27AE60" opacity="0.15"/>
+      <text x="22" y="27" text-anchor="middle" font-size="14">🌻</text>
+      <text x="82" y="20" text-anchor="middle" font-size="11" font-weight="700" fill="#1E8449">Zawór</text>
+      <text x="82" y="36" text-anchor="middle" font-size="10" fill="#27AE60">Strefa 4</text>
+    </g>
+  </g>
+
+  <!-- Wires: NO → Valves (red) -->
+  <path d="M 350,282 L 350,300 L 770,300 L 770,222 L 800,222" stroke="#C0392B" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)"/>
+  <path d="M 452,282 L 452,310 L 780,310 L 780,282 L 800,282" stroke="#C0392B" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)"/>
+  <path d="M 554,282 L 554,320 L 780,320 L 780,342 L 800,342" stroke="#C0392B" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)"/>
+  <path d="M 656,282 L 656,330 L 780,330 L 780,402 L 800,402" stroke="#C0392B" stroke-width="2.5" fill="none" marker-end="url(#arrow-red)"/>
+
+  <!-- Labels on wires to valves -->
+  <text x="755" y="218" font-size="8" fill="#922B21" font-weight="600" text-anchor="end">NO→</text>
+  <text x="755" y="278" font-size="8" fill="#922B21" font-weight="600" text-anchor="end">NO→</text>
+  <text x="755" y="338" font-size="8" fill="#922B21" font-weight="600" text-anchor="end">NO→</text>
+  <text x="755" y="398" font-size="8" fill="#922B21" font-weight="600" text-anchor="end">NO→</text>
+
+  <!-- Common wire from valves going down to meet trafo wire 2 -->
+  <path d="M 940,244 L 970,244 L 970,660 L 940,660" stroke="#8E44AD" stroke-width="3" fill="none"/>
+  <path d="M 940,304 L 970,304" stroke="#8E44AD" stroke-width="2.5" fill="none"/>
+  <path d="M 940,364 L 970,364" stroke="#8E44AD" stroke-width="2.5" fill="none"/>
+  <path d="M 940,424 L 970,424" stroke="#8E44AD" stroke-width="2.5" fill="none"/>
+  <text x="990" y="440" font-size="9" fill="#8E44AD" font-weight="600" transform="rotate(90, 990, 440)">przewód wspólny (COM)</text>
+
+  <!-- ==================== -->
+  <!-- RAIN SENSOR          -->
+  <!-- ==================== -->
+  <g transform="translate(800, 100)">
+    <rect width="140" height="56" rx="10" fill="#E8F8F5" stroke="#27AE60" stroke-width="1.5" filter="url(#shadow-sm)"/>
+    <text x="70" y="22" text-anchor="middle" font-size="11" font-weight="700" fill="#1E8449">Czujnik deszczu</text>
+    <text x="70" y="40" text-anchor="middle" font-size="9" fill="#27AE60">Rain Sensor (NO)</text>
+    <text x="70" y="52" text-anchor="middle" font-size="8" fill="#7DCEA0">2 przewody</text>
+  </g>
+
+  <!-- Wire: Rain sensor → GPIO4 (green) -->
+  <path d="M 800,120 L 720,120 L 720,148 L 680,148" stroke="#27AE60" stroke-width="2.5" fill="none" marker-end="url(#arrow-green)"/>
+  <text x="730" y="112" font-size="8" fill="#1E8449" font-weight="600">GPIO4 + GND</text>
+
+</svg>
+</div>
+
+<div class="legend">
+  <div class="legend-item">
+    <div class="legend-line dc"></div>
+    <span>Zasilanie 5V DC (USB-C)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line ac"></div>
+    <span>Obwód zaworów 24V AC</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line common"></div>
+    <span>Przewód wspólny zaworów (COM)</span>
+  </div>
+  <div class="legend-item">
+    <div class="legend-line signal"></div>
+    <span>Sygnał czujnika deszczu</span>
+  </div>
+</div>
+
+<div class="note-box">
+  <strong>Ważne:</strong><br>
+  • <strong>NC</strong> (Normally Closed) na przekaźnikach — zostaw puste, nie podłączaj nic<br>
+  • <strong>Mostek COM</strong> — połącz terminale COM na CH1–CH4 kawałkami drutu (mostek), potem jeden przewód z transformatora do dowolnego COM<br>
+  • <strong>Transformator 24V AC</strong> nie ma biegunowości — nie ma znaczenia który przewód gdzie<br>
+  • <strong>Czujnik deszczu</strong> to prosty styk NO — też nie ma biegunowości
+</div>
+
+</body>
+</html>

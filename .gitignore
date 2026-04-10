@@ -7,6 +7,10 @@ secrets.yaml
 # macOS
 .DS_Store
 
+# Python
+.venv/
+__pycache__/
+
 # IDE
 .vscode/
 .idea/
