@@ -19,9 +19,21 @@ Projekt zamiany tradycyjnego sterownika nawadniania Toro Temp-4 na rozwiazanie s
 - Harmonogram nawadniania w Home Assistant
 - Reczne sterowanie z poziomu dashboardu HA
 - Dioda LED RGB jako wskaznik stanu pracy
-- Buzzer do sygnalizacji
+- Buzzer do sygnalizacji (start/stop strefy, ostrzezenie przed auto-off, alarm deszczowy)
 - Monitoring WiFi i uptime
 - Fallback AP w razie utraty polaczenia z WiFi
+- Lokalny web UI (`http://<ip>`) jako fallback gdy HA niedostepny
+
+### Zabezpieczenia na poziomie firmware
+
+Cala logika bezpieczenstwa dziala bezposrednio na ESP32 — niezaleznie od Home Assistant:
+
+- **Interlock** — tylko jedna strefa aktywna w danym momencie, 2s przerwa miedzy przelaczeniami (ochrona transformatora)
+- **Auto-off** — konfigurowalne max runtime (domyslnie 30 min), z poprawnym restartem timera przy ponownym wlaczeniu (`script: mode: restart`)
+- **Rain sensor** — natychmiastowe wylaczenie wszystkich stref przy wykryciu deszczu
+- **Restore mode** — po reboocie/utracie zasilania wszystkie strefy i LED startuja jako OFF
+- **WiFi independence** — `reboot_timeout: 0s` oznacza ze urzadzenie nie restartuje sie przy utracie WiFi, dziala dalej autonomicznie
+- **Runtime counters** — calkowity czas pracy kazdej strefy (diagnostyka: "strefa 3 chodzi 2x dluzej niz reszta — zatkana dysza?")
 
 ## Hardware
 
@@ -57,7 +69,8 @@ Projekt zamiany tradycyjnego sterownika nawadniania Toro Temp-4 na rozwiazanie s
 │       └── irrigation_schedule.yaml     # Automatyka - harmonogram nawadniania
 ├── docs/
 │   ├── hardware.md              # Specyfikacja techniczna
-│   └── wiring.md                # Schemat podlaczenia
+│   ├── wiring.md                # Schemat podlaczenia
+│   └── schemat.html             # Interaktywny schemat (otworz w przegladarce)
 └── images/
     └── ...                      # Zdjecia sprzetu
 ```
@@ -90,7 +103,7 @@ Skrotowo:
 - Zawory 24V AC podlacz do przekaznikow CH1-CH4 (COM + NO)
 - Przewod wspolny zaworow do jednej fazy transformatora 24V AC
 - Czujnik deszczu do GPIO4 + GND
-- Zasilanie ESP32: 12-24V DC do zlacza srubowego
+- Zasilanie ESP32: USB-C 5V (ladowarka) lub 7-36V DC do zlacza srubowego
 
 ## Konfiguracja harmonogramu
 

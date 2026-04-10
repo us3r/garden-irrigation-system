@@ -16,6 +16,7 @@ esp32:
 wifi:
   ssid: !secret wifi_ssid
   password: !secret wifi_password
+  reboot_timeout: 0s
   ap:
     ssid: "${device_name}-fallback"
     password: !secret fallback_password
@@ -31,6 +32,11 @@ api:
 ota:
   - platform: esphome
     password: !secret ota_password
+
+web_server:
+  port: 80
+
+improv_serial:
 
 # --- Status LED (WS2812 onboard) ---
 light:
@@ -52,6 +58,61 @@ output:
 rtttl:
   output: buzzer_out
   id: buzzer
+
+# --- Scripts (single source of truth for zone logic) ---
+script:
+  - id: zone_started
+    then:
+      - light.turn_on:
+          id: status_led
+          red: 0%
+          green: 100%
+          blue: 0%
+      - rtttl.play: "start:d=16,o=6,b=200:c,e"
+
+  - id: zone_stopped
+    then:
+      - if:
+          condition:
+            and:
+              - switch.is_off: zone_1
+              - switch.is_off: zone_2
+              - switch.is_off: zone_3
+              - switch.is_off: zone_4
+          then:
+            - light.turn_off: status_led
+
+  - id: zone_auto_off_1
+    mode: restart
+    then:
+      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
+      - rtttl.play: "warn:d=16,o=5,b=200:e,c"
+      - delay: 2s
+      - switch.turn_off: zone_1
+
+  - id: zone_auto_off_2
+    mode: restart
+    then:
+      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
+      - rtttl.play: "warn:d=16,o=5,b=200:e,c"
+      - delay: 2s
+      - switch.turn_off: zone_2
+
+  - id: zone_auto_off_3
+    mode: restart
+    then:
+      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
+      - rtttl.play: "warn:d=16,o=5,b=200:e,c"
+      - delay: 2s
+      - switch.turn_off: zone_3
+
+  - id: zone_auto_off_4
+    mode: restart
+    then:
+      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
+      - rtttl.play: "warn:d=16,o=5,b=200:e,c"
+      - delay: 2s
+      - switch.turn_off: zone_4
 
 # --- Rain Sensor (binary input on GPIO4) ---
 binary_sensor:
@@ -77,6 +138,22 @@ binary_sensor:
           green: 0%
           blue: 100%
       - rtttl.play: "rain:d=4,o=5,b=100:8e6,8d6"
+  - platform: template
+    id: zone_1_active
+    lambda: "return id(zone_1).state;"
+    internal: true
+  - platform: template
+    id: zone_2_active
+    lambda: "return id(zone_2).state;"
+    internal: true
+  - platform: template
+    id: zone_3_active
+    lambda: "return id(zone_3).state;"
+    internal: true
+  - platform: template
+    id: zone_4_active
+    lambda: "return id(zone_4).state;"
+    internal: true
 
 # --- Max runtime (configurable from HA) ---
 number:
@@ -94,7 +171,7 @@ number:
 
 # --- Irrigation Zone Switches (Relays CH1-CH4) ---
 # Interlock: only one zone can be active at a time
-# Max runtime: auto-off after 30 minutes (safety against flooding)
+# Auto-off: script with mode:restart fixes double-timer bug
 switch:
   - platform: gpio
     pin: GPIO1
@@ -105,22 +182,11 @@ switch:
     interlock: &interlock_group [zone_1, zone_2, zone_3, zone_4]
     interlock_wait_time: 2s
     on_turn_on:
-      - light.turn_on:
-          id: status_led
-          red: 0%
-          green: 100%
-          blue: 0%
-      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
-      - switch.turn_off: zone_1
+      - script.execute: zone_started
+      - script.execute: zone_auto_off_1
     on_turn_off:
-      - if:
-          condition:
-            and:
-              - switch.is_off: zone_2
-              - switch.is_off: zone_3
-              - switch.is_off: zone_4
-          then:
-            - light.turn_off: status_led
+      - script.stop: zone_auto_off_1
+      - script.execute: zone_stopped
 
   - platform: gpio
     pin: GPIO2
@@ -131,22 +197,11 @@ switch:
     interlock: *interlock_group
     interlock_wait_time: 2s
     on_turn_on:
-      - light.turn_on:
-          id: status_led
-          red: 0%
-          green: 100%
-          blue: 0%
-      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
-      - switch.turn_off: zone_2
+      - script.execute: zone_started
+      - script.execute: zone_auto_off_2
     on_turn_off:
-      - if:
-          condition:
-            and:
-              - switch.is_off: zone_1
-              - switch.is_off: zone_3
-              - switch.is_off: zone_4
-          then:
-            - light.turn_off: status_led
+      - script.stop: zone_auto_off_2
+      - script.execute: zone_stopped
 
   - platform: gpio
     pin: GPIO41
@@ -157,22 +212,11 @@ switch:
     interlock: *interlock_group
     interlock_wait_time: 2s
     on_turn_on:
-      - light.turn_on:
-          id: status_led
-          red: 0%
-          green: 100%
-          blue: 0%
-      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
-      - switch.turn_off: zone_3
+      - script.execute: zone_started
+      - script.execute: zone_auto_off_3
     on_turn_off:
-      - if:
-          condition:
-            and:
-              - switch.is_off: zone_1
-              - switch.is_off: zone_2
-              - switch.is_off: zone_4
-          then:
-            - light.turn_off: status_led
+      - script.stop: zone_auto_off_3
+      - script.execute: zone_stopped
 
   - platform: gpio
     pin: GPIO42
@@ -183,24 +227,13 @@ switch:
     interlock: *interlock_group
     interlock_wait_time: 2s
     on_turn_on:
-      - light.turn_on:
-          id: status_led
-          red: 0%
-          green: 100%
-          blue: 0%
-      - delay: !lambda "return id(max_runtime).state * 60 * 1000;"
-      - switch.turn_off: zone_4
+      - script.execute: zone_started
+      - script.execute: zone_auto_off_4
     on_turn_off:
-      - if:
-          condition:
-            and:
-              - switch.is_off: zone_1
-              - switch.is_off: zone_2
-              - switch.is_off: zone_3
-          then:
-            - light.turn_off: status_led
+      - script.stop: zone_auto_off_4
+      - script.execute: zone_stopped
 
-# --- Uptime & WiFi signal sensors ---
+# --- Runtime counters per zone (total seconds) ---
 sensor:
   - platform: uptime
     name: "Uptime"
@@ -208,6 +241,34 @@ sensor:
   - platform: wifi_signal
     name: "WiFi Signal"
     update_interval: 60s
+
+  - platform: duty_time
+    name: "Zone 1 Total Runtime"
+    id: zone_1_runtime
+    sensor: zone_1_active
+    restore: true
+    icon: "mdi:timer-sand"
+
+  - platform: duty_time
+    name: "Zone 2 Total Runtime"
+    id: zone_2_runtime
+    sensor: zone_2_active
+    restore: true
+    icon: "mdi:timer-sand"
+
+  - platform: duty_time
+    name: "Zone 3 Total Runtime"
+    id: zone_3_runtime
+    sensor: zone_3_active
+    restore: true
+    icon: "mdi:timer-sand"
+
+  - platform: duty_time
+    name: "Zone 4 Total Runtime"
+    id: zone_4_runtime
+    sensor: zone_4_active
+    restore: true
+    icon: "mdi:timer-sand"
 
 text_sensor:
   - platform: wifi_info
