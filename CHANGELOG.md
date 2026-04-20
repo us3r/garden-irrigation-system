@@ -1,5 +1,19 @@
 # Changelog
 
+## v1.3.0 — Sygnalizacja LED z priorytetami i trybem nocnym
+
+- Centralny skrypt `led_update` zarzadzajacy kolorem/efektem LED wg priorytetow:
+  - Awaria (brak WiFi) — czerwone szybkie miganie
+  - Deszcz blokuje — niebieskie pulsowanie
+  - Strefa aktywna — staly zielony
+  - Standby — przygaszone biale pulsowanie ("breathing")
+  - OTA w trakcie — staly fioletowy
+- Dodanie efektow LED: `breathe`, `slow_blink`, `fast_blink` (pulse/strobe)
+- Naprawa: LED nie zostaje juz niebieski po ustaniu deszczu — `on_release` czujnika wywoluje aktualizacje
+- Dodanie trybu nocnego (switch `Night Mode`) — mozliwosc wygaszenia LED z HA, np. automatyzacja na pore dnia
+- LED reaguje na: boot, connect/disconnect WiFi, polaczenie API, start/stop strefy, deszcz on/off, OTA
+- Dodanie `globals` do przechowywania stanu night mode
+
 ## v1.2.0 — Refaktor logiki stref i liczniki czasu pracy
 
 - Wyciagniecie logiki wlaczania/wylaczania stref do wspolnych scriptow (`zone_started`, `zone_stopped`) — jeden punkt prawdy zamiast 4 kopii

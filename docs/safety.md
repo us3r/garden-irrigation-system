@@ -97,6 +97,25 @@ wifi:
 
 **Rozwiazanie:** `duty_time` per strefa z `restore: true`. Calkowity czas pracy kazdej strefy, widoczny w HA. Jesli strefa 3 ma 2x wiecej godzin niz reszta — cos jest nie tak.
 
+## Sygnalizacja LED
+
+**Problem:** Bez wizualnego feedbacku nie wiadomo czy system dziala, ma awarie, lub blokuje nawadnianie przez deszcz.
+
+**Rozwiazanie:** Centralny skrypt `led_update` z hierarchia priorytetow — zawsze wyswietla najwazniejszy aktualny stan:
+
+| Priorytet | Stan | Kolor | Efekt |
+|-----------|------|-------|-------|
+| 1 (najwyzszy) | Night mode | Wylaczony | — |
+| 2 | Brak WiFi (awaria) | Czerwony | Szybkie miganie (200ms) |
+| 3 | Deszcz aktywny | Niebieski | Powolne pulsowanie (2s) |
+| 4 | Strefa aktywna | Zielony | Staly (80%) |
+| 5 (najnizszy) | Standby | Bialy | Breathing (5-40%) |
+| — | OTA update | Fioletowy | Staly |
+
+**Wazne:** LED wraca do wlasciwego stanu po ustaniu zdarzenia — np. po ustaniu deszczu przechodzi na standby lub aktywna strefe (wczesniej zostawal niebieski na zawsze).
+
+**Night mode:** Switch sterowalny z HA — mozna podpiac pod automatyzacje (np. wylacz LED 22:00-06:00). Nie wplywa na dzialanie systemu, tylko na diode.
+
 ## Podsumowanie
 
 | Zabezpieczenie | Gdzie dziala | Wymaga HA? | Wymaga WiFi? |
@@ -109,6 +128,8 @@ wifi:
 | Fallback AP | Firmware | Nie | Nie |
 | Web server | Firmware | Nie | Tak (LAN) |
 | Improv Serial | Firmware | Nie | Nie (USB) |
+| Sygnalizacja LED | Firmware | Nie | Nie |
+| Night mode | Firmware + HA | Do sterowania tak | Nie |
 | Runtime counters | Firmware + HA | Do podgladu tak | Tak |
 | Rain guard automation | HA | Tak | Tak |
 | Harmonogram | HA | Tak | Tak |

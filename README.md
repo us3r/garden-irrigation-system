@@ -22,7 +22,8 @@ Cala logika bezpieczenstwa dziala na poziomie firmware — interlock stref, auto
 - Liczniki czasu pracy per strefa (diagnostyka zuzycia wody / wykrywanie usterek)
 - Harmonogram nawadniania w Home Assistant
 - Reczne sterowanie z dashboardu HA lub lokalnego web UI
-- Dioda LED RGB jako wskaznik stanu (zielony = aktywna strefa, niebieski = deszcz)
+- Dioda LED RGB z priorytetowa sygnalizacja stanow (standby/aktywna/deszcz/awaria/OTA)
+- Tryb nocny — wylaczenie LED z poziomu HA (switch lub automatyzacja)
 - Buzzer — sygnal startu strefy, ostrzezenie przed auto-off, alarm deszczowy
 - Monitoring WiFi i uptime
 - Fallback AP z captive portal w razie utraty WiFi
